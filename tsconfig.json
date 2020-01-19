@@ -10,7 +10,9 @@
     "experimentalDecorators": true,
     "sourceMap": true,
     "noImplicitAny": true,
-    "suppressImplicitAnyIndexErrors": true
+    "suppressImplicitAnyIndexErrors": true,
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react"  
   },
   "include": ["server"]
 }
