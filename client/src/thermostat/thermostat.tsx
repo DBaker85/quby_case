@@ -11,6 +11,24 @@ const Thermostat: FunctionComponent = () => {
     setTemp: 0
   });
 
+  const incrementTemp = ()=>{
+      console.log(currentData.temp,currentData.temp+.5)
+      axios.patch("http://localhost:9090",{
+        currentSetpoint: currentData.temp+.5
+      }).then(res => {
+        axios.get("http://localhost:9090").then(res => {
+            console.log(res.status);
+            if (res.status <= 200) {
+              setCurrentData({
+                temp: res.data.currentTemp,
+                time: new Date(res.data.timestamp).toLocaleTimeString(),
+                setTemp: res.data.currentSetpoint
+              });
+            }
+          });
+      });
+  }
+
   useEffect(() => {
     axios.get("http://localhost:9090").then(res => {
       console.log(res.status);
@@ -35,9 +53,7 @@ const Thermostat: FunctionComponent = () => {
       </div>
       <div className={styles["button-left"]}>
         <Button
-          onClick={() => {
-            console.log("decrement");
-          }}
+          onClick={incrementTemp}
         >
           +
         </Button>

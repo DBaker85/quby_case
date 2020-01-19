@@ -1,0 +1,13 @@
+@import '../../scss/palette.scss';
+
+  .button {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: $color2;
+    color: $color1;
+    font-size: 4em;
+    border: 1px solid black;
+  }
