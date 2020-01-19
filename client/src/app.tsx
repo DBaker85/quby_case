@@ -5,7 +5,7 @@ import Thermostat from './thermostat/thermostat';
 
 const App: FunctionComponent = () => {
     return(
-        <div className={styles.wrapper}>
+        <div className={styles['wrapper']}>
             <Thermostat/>
         </div>
     )
