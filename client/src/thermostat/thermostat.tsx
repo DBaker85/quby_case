@@ -90,10 +90,10 @@ const Thermostat: FunctionComponent = () => {
     <div className={styles["thermostat-wrapper"]}>
       <div className={styles["display"]}>
         <div>
-          <div>{currentData.currentSetpoint}</div>
-          <div>{currentData.timestamp}</div>
+          <div>Target temperature: {currentData.currentSetpoint}°</div>
+          <div>Last Updated: {currentData.timestamp}</div>
         </div>
-        <div>{currentData.currentTemp}</div>
+        <div>Current temperature: {currentData.currentTemp}°</div>
       </div>
       <div className={styles["button-left"]}>
         <Button id="increment-button" disabled={currentData.currentTemp < 1} onClick={() => updateTemp("increment")}>+</Button>
