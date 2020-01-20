@@ -1,7 +1,14 @@
 import React, { FunctionComponent, useEffect, useState, useRef } from "react";
 import Axios from "../axios";
 import { timer, from, interval } from "rxjs";
-import { map, switchMap, skipWhile, filter, retryWhen, take } from "rxjs/operators";
+import {
+  map,
+  switchMap,
+  filter,
+  retryWhen,
+  take,
+  retry
+} from "rxjs/operators";
 
 import Button from "../shared/elements/button/button";
 import styles from "./thermostat.module.scss";
@@ -24,67 +31,61 @@ const Thermostat: FunctionComponent = () => {
   });
 
   const updatingValue = useRef(false);
+  const tempSetPoint = useRef(0);
 
   let fetchSubscription;
+  let tempTimeout;
 
+  // TODO: fix throw for retry on fail
   const fetchTemp = () => {
     fetchSubscription = interval(2000)
       .pipe(
         filter(() => updatingValue.current === false),
-        switchMap(()=>Axios.get<TempData>("/")),
-        map((response)=>{
-          if(response.status > 200){
-            console.log('map', response)
-            throw { error : 'error' };
+        switchMap(() => Axios.get<TempData>("/")),
+        map(response => {
+          if (response.status > 200) {
+            console.log("map", response);
+            throw { error: "error" };
           } else {
-          return response;
-        }
+            return response;
+          }
         }),
-        retryWhen((errors)=> {
-          console.log('error', errors.pipe(take(10)))
-          return errors
-        }))
+        retry()
+      )
       .subscribe(res => {
         setCurrentData({
           currentTemp: res.data.currentTemp,
           timestamp: new Date(res.data.timestamp).toLocaleTimeString(),
           currentSetpoint: res.data.currentSetpoint
         });
+        tempSetPoint.current = res.data.currentSetpoint;
       });
   };
 
-  let incrementTimeout;
-  let decrementTimeout;
+  const updateTemp = (type: "increment" | "decrement" = "increment") => {
+    tempSetPoint.current =
+      type === "increment"
+        ? (tempSetPoint.current += 0.5)
+        : (tempSetPoint.current -= 0.5);
 
-  const incrementTemp = () => {
-    if (incrementTimeout) {
-      console.log(clearTimeout);
-      clearTimeout(incrementTimeout);
+    if (tempTimeout) {
+      clearTimeout(tempTimeout);
     }
-    incrementTimeout = setTimeout(() => {
-      console.log("set temps");
+    tempTimeout = setTimeout(() => {
       updatingValue.current = true;
-    }, 500);
-
-    // count final set temp with a debounce
-    // after debounce then set temp via api
-    //
-  };
-  const decrementTemp = () => {
-    if (decrementTimeout) {
-      console.log(clearTimeout);
-      clearTimeout(decrementTimeout);
-    }
-    decrementTimeout = setTimeout(() => {
-      console.log("- set temps");
-    }, 500);
+      Axios.patch("", { currentSetpoint: tempSetPoint.current }).pipe(retry()).subscribe(
+        () => {
+          updatingValue.current = false;
+        }
+      );
+    }, 1000);
   };
 
   useEffect(() => {
     fetchTemp();
     return () => fetchSubscription.unsubscribe();
   }, []);
-
+  // TODO: Add user feedback for updating
   return (
     <div className={styles["thermostat-wrapper"]}>
       <div className={styles["display"]}>
@@ -95,10 +96,10 @@ const Thermostat: FunctionComponent = () => {
         <div>{currentData.currentTemp}</div>
       </div>
       <div className={styles["button-left"]}>
-        <Button onClick={incrementTemp}>+</Button>
+        <Button disabled={currentData.currentTemp < 1} onClick={() => updateTemp("increment")}>+</Button>
       </div>
       <div className={styles["button-right"]}>
-        <Button onClick={decrementTemp}>-</Button>
+        <Button disabled={currentData.currentTemp < 1} onClick={() => updateTemp("decrement")}>-</Button>
       </div>
     </div>
   );

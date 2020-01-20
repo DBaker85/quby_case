@@ -10,4 +10,9 @@
     color: $color1;
     font-size: 4em;
     border: 1px solid black;
+    &:disabled{
+      background-color: lighten($color2, 30);
+      color: lighten($color1, 50);
+      cursor: not-allowed;
+    }
   }
