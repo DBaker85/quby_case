@@ -1,12 +1,10 @@
 import React, { FunctionComponent, useEffect, useState, useRef } from "react";
 import Axios from "../axios";
-import { timer, from, interval } from "rxjs";
+import { interval } from "rxjs";
 import {
   map,
   switchMap,
   filter,
-  retryWhen,
-  take,
   retry
 } from "rxjs/operators";
 
@@ -36,7 +34,12 @@ const Thermostat: FunctionComponent = () => {
   let fetchSubscription;
   let tempTimeout;
 
-  // TODO: fix throw for retry on fail
+  /** 
+   *  Fetch every 2 seconds but do not fetch while waiting for an update 
+   *  from a 'Patch request'.
+   *  Treat anything higher than 200 as an error and set it to retry the stream.
+  */
+  // FIXME: fix throw for retry on fail
   const fetchTemp = () => {
     fetchSubscription = interval(2000)
       .pipe(
@@ -62,12 +65,14 @@ const Thermostat: FunctionComponent = () => {
       });
   };
 
+  // Use a simple timeout to debounce userclicks to before sending update
   const updateTemp = (type: "increment" | "decrement" = "increment") => {
     tempSetPoint.current =
       type === "increment"
         ? (tempSetPoint.current += 0.5)
         : (tempSetPoint.current -= 0.5);
 
+    // Reset timer if user clicks in less than a second
     if (tempTimeout) {
       clearTimeout(tempTimeout);
     }
@@ -83,8 +88,15 @@ const Thermostat: FunctionComponent = () => {
 
   useEffect(() => {
     fetchTemp();
+    // cleanup
     return () => fetchSubscription.unsubscribe();
   }, []);
+
+  /** 
+   * Because we are using the current target temperature to determine the new one
+   * and the API can sometimes return 202 up to 5-6 times in a row on app start,
+   * we disable the buttons until we have a target temp of more than 0
+   */
   // TODO: Add user feedback for updating
   return (
     <div className={styles["thermostat-wrapper"]}>

@@ -23,6 +23,8 @@ describe("Thermostat", () => {
 
   // TODO: Test there is data visible
 
+  
+
   it("should fetch temperature", () => {
     jest.useFakeTimers();
     const getSpy = jest.spyOn(axios, "get");
