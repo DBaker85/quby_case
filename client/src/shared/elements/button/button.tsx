@@ -5,11 +5,12 @@ import styles from './button.module.scss';
 interface ButtonProps {
     onClick: ()=>void ;
     disabled?: boolean;
+    id?: string;
 }
 
-const Button:FunctionComponent<ButtonProps> = ({children, onClick, disabled})=>{
+const Button:FunctionComponent<ButtonProps> = ({children, onClick, disabled, id})=>{
 return(
-    <button disabled={disabled} className={styles['button']} onClick={onClick}>
+    <button id={id} disabled={disabled} className={styles['button']} onClick={onClick}>
         {children}
     </button>
 )

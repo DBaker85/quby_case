@@ -96,10 +96,10 @@ const Thermostat: FunctionComponent = () => {
         <div>{currentData.currentTemp}</div>
       </div>
       <div className={styles["button-left"]}>
-        <Button disabled={currentData.currentTemp < 1} onClick={() => updateTemp("increment")}>+</Button>
+        <Button id="increment-button" disabled={currentData.currentTemp < 1} onClick={() => updateTemp("increment")}>+</Button>
       </div>
       <div className={styles["button-right"]}>
-        <Button disabled={currentData.currentTemp < 1} onClick={() => updateTemp("decrement")}>-</Button>
+        <Button id="decrement-button" disabled={currentData.currentTemp < 1} onClick={() => updateTemp("decrement")}>-</Button>
       </div>
     </div>
   );
